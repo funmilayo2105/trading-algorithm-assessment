@@ -1,5 +1,9 @@
 package codingblackfemales.gettingstarted;
 
+import java.nio.ByteBuffer;
+
+import org.agrona.concurrent.UnsafeBuffer;
+
 import codingblackfemales.algo.AlgoLogic;
 import codingblackfemales.container.Actioner;
 import codingblackfemales.container.AlgoContainer;
@@ -11,10 +15,11 @@ import codingblackfemales.sequencer.marketdata.SequencerTestCase;
 import codingblackfemales.sequencer.net.TestNetwork;
 import codingblackfemales.service.MarketDataService;
 import codingblackfemales.service.OrderService;
-import messages.marketdata.*;
-import org.agrona.concurrent.UnsafeBuffer;
-
-import java.nio.ByteBuffer;
+import messages.marketdata.BookUpdateEncoder;
+import messages.marketdata.InstrumentStatus;
+import messages.marketdata.MessageHeaderEncoder;
+import messages.marketdata.Source;
+import messages.marketdata.Venue;
 
 public abstract class AbstractAlgoTest extends SequencerTestCase {
 
@@ -74,6 +79,38 @@ public abstract class AbstractAlgoTest extends SequencerTestCase {
 
         return directBuffer;
     }
+    protected UnsafeBuffer createTick2() {
+
+        final MessageHeaderEncoder headerEncoder = new MessageHeaderEncoder();
+        final BookUpdateEncoder encoder = new BookUpdateEncoder();
+    
+        final ByteBuffer byteBuffer = ByteBuffer.allocateDirect(1024);
+        final UnsafeBuffer directBuffer = new UnsafeBuffer(byteBuffer);
+    
+        // write the encoded output to the direct buffer
+        encoder.wrapAndApplyHeader(directBuffer, 0, headerEncoder);
+    
+        // set different fields to simulate different market data
+        encoder.venue(Venue.XLON);
+        encoder.instrumentId(456L); // Different instrument ID for this tick
+    
+        // Different market data for bids and asks
+        encoder.askBookCount(2)
+                .next().price(102L).size(120L)  // Different ask prices and sizes
+                .next().price(107L).size(180L)
+                .next().price(113L).size(200L);
+    
+        encoder.bidBookCount(2)
+                .next().price(95L).size(150L)
+                .next().price(90L).size(250L)
+                .next().price(113L).size(230L);
+    
+        encoder.instrumentStatus(InstrumentStatus.CONTINUOUS);
+        encoder.source(Source.STREAM);
+    
+        return directBuffer;
+    }
+    
 
 
 

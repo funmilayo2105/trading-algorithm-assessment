@@ -1,7 +1,9 @@
 package codingblackfemales.gettingstarted;
 
-import codingblackfemales.algo.AlgoLogic;
+import static org.junit.Assert.assertEquals;
 import org.junit.Test;
+
+import codingblackfemales.algo.AlgoLogic;
 
 
 /**
@@ -28,8 +30,21 @@ public class MyAlgoTest extends AbstractAlgoTest {
 
         //create a sample market data tick....
         send(createTick());
+        
+        
 
         //simple assert to check we had 3 orders created
-        //assertEquals(container.getState().getChildOrders().size(), 3);
+        assertEquals(container.getState().getChildOrders().size(), 3);
+    }
+    @Test
+    public void testDispatchThroughSequencerWithTick2() throws Exception {
+
+        //create a sample market data tick....
+        
+        send(createTick2());
+        
+
+        //simple assert to check we had 3 orders created
+        assertEquals(container.getState().getChildOrders().size(), 3);
     }
 }
