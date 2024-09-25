@@ -15,12 +15,14 @@ import { MarketDepthPanel } from "./MarketDepthPanel";
    { symbolLevel:"1237", level: 7, bid: 945, bidQuantity: 900, offer: 1029, offerQuantity: 2000 },
   { symbolLevel:"1238", level: 8, bid: 943, bidQuantity: 500, offer: 1031, offerQuantity: 500 },
    { symbolLevel:"1239", level: 9, bid: 940, bidQuantity: 200, offer: 1024, offerQuantity: 800 },
- ];
-
-/**
- * TODO
- */
-export const MarketDepthFeature = () => {
+ ];*/
+ export const MarketDepthFeature = () => {
   const data = useMarketDepthData(schemas.prices);
   return <MarketDepthPanel data={data} />;
-};
+ }
+
+
+
+
+ 
+ 
