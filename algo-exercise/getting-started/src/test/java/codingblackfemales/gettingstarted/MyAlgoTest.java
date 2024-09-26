@@ -1,9 +1,18 @@
 package codingblackfemales.gettingstarted;
 
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
+import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+
+import codingblackfemales.action.Action;
+import codingblackfemales.action.NoAction;
 import codingblackfemales.algo.AlgoLogic;
+import codingblackfemales.sotw.ChildOrder;
+import codingblackfemales.sotw.SimpleAlgoState;
 
 
 /**
@@ -14,37 +23,134 @@ import codingblackfemales.algo.AlgoLogic;
  * You should then add behaviour to your algo to respond to that market data by creating or cancelling child orders.
  *
  * When you are comfortable you algo does what you expect, then you can move on to creating the MyAlgoBackTest.
- *
  */
 public class MyAlgoTest extends AbstractAlgoTest {
 
+    private SimpleAlgoState mockState;
+
     @Override
     public AlgoLogic createAlgoLogic() {
-        //this adds your algo logic to the container classes
+        // This adds your algo logic to the container classes
         return new MyAlgoLogic();
     }
 
+    @Before
+    public void setUp() {
+        mockState = Mockito.mock(SimpleAlgoState.class);  // Initialize the mock state before tests
+    }
 
     @Test
-    public void testDispatchThroughSequencer() throws Exception {
+   public void testDispatchThroughSequencer() throws Exception {
+     //Create a sample market data tick
+       send(createTick());
 
-        //create a sample market data tick....
-        send(createTick());
-        
-        
+       // Simple assert to check we had 3 orders created
+    assertEquals("Expected 3 child orders after the tick", 3, container.getState().getChildOrders().size());
+   }
 
-        //simple assert to check we had 3 orders created
-        assertEquals(container.getState().getChildOrders().size(), 3);
-    }
     @Test
-    public void testDispatchThroughSequencerWithTick2() throws Exception {
+    public void testCanPlaceBuyOrder_SpreadFavorable() {
+        // Arrange: favorable conditions
+        double tradeSpread = 2.0;
+        double spreadThreshold = 1.5;
+        int maxChildOrder = 3;
 
-        //create a sample market data tick....
-        
-        send(createTick2());
-        
+        // Mocking child orders
+        List<ChildOrder> childOrders = Mockito.mock(List.class);
+        Mockito.when(childOrders.size()).thenReturn(2);  // Less than maxChildOrder
+        Mockito.when(mockState.getActiveChildOrders()).thenReturn(childOrders);
 
-        //simple assert to check we had 3 orders created
-        assertEquals(container.getState().getChildOrders().size(), 3);
+        // Act: call the method
+        boolean result = OrderActionUtils.canPlaceBuyOrder(mockState, tradeSpread, spreadThreshold, maxChildOrder);
+
+        // Assert: ensure that the result is true
+        assertTrue("Expected the buy order condition to be true", result);
+        System.out.println("Test result for testCanPlaceBuyOrder_SpreadFavorable: " + result);
+    } 
+
+     @Test
+    public void testCanPlaceBuyOrder_SpreadNotFavorable() {
+        // Arrange: unfavorable conditions
+        double tradeSpread = 1.0;  // Below the spread threshold
+        double spreadThreshold = 1.5;
+        int maxChildOrder = 3;
+
+        // Mocking child orders
+        List<ChildOrder> childOrders = Mockito.mock(List.class);
+        Mockito.when(childOrders.size()).thenReturn(2);  // Less than maxChildOrder
+        Mockito.when(mockState.getActiveChildOrders()).thenReturn(childOrders);
+
+        // Act: call the method
+        boolean result = OrderActionUtils.canPlaceBuyOrder(mockState, tradeSpread, spreadThreshold, maxChildOrder);
+
+        // Assert: ensure that the result is false
+        assertTrue("Expected the buy order condition to be false", !result);
+         System.out.println("Test result for testCanPlaceBuyOrderWhenSpreadNotFavorable: " + result);
+    } 
+
+    @Test
+    public void testCanPlaceSellOrder_UnfavorableSpread() {
+        //unfavorable conditions
+        double tradeSpread = -0.5;
+        int maxChildOrder = 3;
+
+        // Mocking child orders
+        List<ChildOrder> childOrders = Mockito.mock(List.class);
+        Mockito.when(childOrders.size()).thenReturn(2);  // Less than maxChildOrder
+        Mockito.when(mockState.getActiveChildOrders()).thenReturn(childOrders);
+
+        // Act: call the method
+        boolean result = OrderActionUtils.canPlaceSellOrder(mockState, tradeSpread, maxChildOrder);
+
+        // Assert: ensure that the result is true
+        assertTrue("Expected the sell order condition to be true", result);
+        System.out.println("Test result CanPlaceSellOrderInUnfavorableSpread: " + result);
     }
+
+   /*  @Test
+    public void testCancelOldestActiveOrder() {
+        // Arrange: create two mock orders
+        ChildOrder mockOrder1 = Mockito.mock(ChildOrder.class);  // This will be the oldest
+        ChildOrder mockOrder2 = Mockito.mock(ChildOrder.class);  // This will be the second
+    
+        // Create a list with the oldest order first
+        List<ChildOrder> activeOrders = List.of(mockOrder1, mockOrder2);
+    
+        // Mock the state to return the active orders
+        Mockito.when(mockState.getActiveChildOrders()).thenReturn(activeOrders);
+    
+        // Act: call the method to cancel the order
+        Action cancelAction = OrderActionUtils.cancelActiveOrder(mockState);
+    
+        // Assert: ensure the action is a CancelChildOrder action
+        assertTrue("Expected to return a CancelChildOrder action", cancelAction instanceof CancelChildOrder);
+        
+        // Cast to CancelChildOrder
+        CancelChildOrder cancelChildOrder = (CancelChildOrder) cancelAction;
+        
+        // Assert that the order in cancelChildOrder is the same as mockOrder1 (the oldest order)
+        assertEquals("Expected to cancel the oldest active order", mockOrder1, cancelChildOrder.getOrderToCancel());
+    
+        // Print the action result
+        System.out.println("Cancel Action Result: " + cancelChildOrder);  // This will use the toString() method
+    } */
+    
+
+    
+
+    @Test
+    public void testNoActiveOrder() {
+        // Arrange: simulate a state with no active child orders
+        Mockito.when(mockState.getActiveChildOrders()).thenReturn(null);  // No active orders
+    
+        // Act: call the method that should attempt to cancel an order
+        Action cancelAction = OrderActionUtils.cancelActiveOrder(mockState);
+    
+        // Print the action result
+        System.out.println("Cancel Action Result: " + cancelAction);
+    
+        // Assert: ensure that no cancellation occurs (returns NoAction or similar)
+        assertEquals("Expected NoAction when there are no active orders", NoAction.NoAction, cancelAction);
+    }
+
 }
