@@ -4,8 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import codingblackfemales.action.Action;
-import codingblackfemales.action.CancelChildOrder;
-import codingblackfemales.action.CreateChildOrder;
 import codingblackfemales.action.NoAction;
 import codingblackfemales.algo.AlgoLogic;
 import codingblackfemales.sotw.SimpleAlgoState;
@@ -19,6 +17,7 @@ public class MyAlgoLogic implements AlgoLogic {
     private static final Logger logger = LoggerFactory.getLogger(MyAlgoLogic.class);
     private static final int MaxChildOrder = 3;
     private static final double SpreadThreshold = 1.5;
+    
 
     @Override
     public Action evaluate(SimpleAlgoState state) {
@@ -41,28 +40,29 @@ public class MyAlgoLogic implements AlgoLogic {
         double tradeSpread = (nearTouch.price - farTouch.price);
         logger.info("[MYALGO] The Trade spread: " + tradeSpread);
     
-        long askQuantity = farTouch.quantity;
-        long askPrice = farTouch.price;
+       
+       
     
-        if (tradeSpread >= SpreadThreshold && state.getChildOrders().size() < MaxChildOrder) {
-            logger.info("[MYALGO] Placing a buy order with quantity: " + askQuantity + " and price: " + askPrice);
-            return new CreateChildOrder(Side.BUY, askQuantity, askPrice);
-    
-        } else if (tradeSpread < 0 && state.getChildOrders().size() < MaxChildOrder) {
+
+        if (OrderActionUtils.canPlaceBuyOrder(state, tradeSpread, SpreadThreshold, MaxChildOrder)) {
+            // Place a buy order if the spread is favorable
+            long askQuantity = farTouch.quantity;
+            long askPrice = farTouch.price;
+            return OrderActionUtils.createBuyOrder(Side.BUY, askQuantity, askPrice);
+        
+        } else if (OrderActionUtils.canPlaceSellOrder(state, tradeSpread, MaxChildOrder)) {
+            // Place a sell order if the spread is unfavorable and we can place more orders
             long bidQuantity = nearTouch.quantity;
             long bidPrice = nearTouch.price;
-    
-            logger.info("[MYALGO] Unfavorable spread, placing a sell order with quantity: " + bidQuantity + " and price: " + bidPrice);
-            return new CreateChildOrder(Side.SELL, bidQuantity, bidPrice);
-    
-        } else if (tradeSpread < SpreadThreshold && state.getChildOrders().size() > MaxChildOrder) {
-            if (state.getActiveChildOrders() != null && !state.getActiveChildOrders().isEmpty()) {
-                logger.info("[MYALGO] Spread is tight, canceling an active child order...");
-                return new CancelChildOrder(state.getActiveChildOrders().get(0));
-            }
+            return OrderActionUtils.createSellOrder(Side.SELL, bidQuantity, bidPrice);
+        
+        } else if (OrderActionUtils.shouldCancelOrder(state, 2, 1.5, 3)) {
+            // Cancel active orders if the conditions are met
+            return OrderActionUtils.cancelActiveOrder(state);
         } else {
             logger.info("[MYALGO] No trading opportunity, taking no action.");
+            return NoAction.NoAction;
         }
-        return NoAction.NoAction;
-    }}
+        
+} }
     
