@@ -14,143 +14,98 @@ import codingblackfemales.algo.AlgoLogic;
 import codingblackfemales.sotw.ChildOrder;
 import codingblackfemales.sotw.SimpleAlgoState;
 
-
-/**
- * This test is designed to check your algo behavior in isolation of the order book.
- *
- * You can tick in market data messages by creating new versions of createTick() (ex. createTick2, createTickMore etc..)
- *
- * You should then add behaviour to your algo to respond to that market data by creating or cancelling child orders.
- *
- * When you are comfortable you algo does what you expect, then you can move on to creating the MyAlgoBackTest.
- */
 public class MyAlgoTest extends AbstractAlgoTest {
 
     private SimpleAlgoState mockState;
+    private double spreadThreshold = 1.5;  
+    private Spread spread;
 
     @Override
     public AlgoLogic createAlgoLogic() {
-        // This adds your algo logic to the container classes
         return new MyAlgoLogic();
     }
 
     @Before
     public void setUp() {
-        mockState = Mockito.mock(SimpleAlgoState.class);  // Initialize the mock state before tests
+        mockState = Mockito.mock(SimpleAlgoState.class);
+        
     }
 
     @Test
-   public void testDispatchThroughSequencer() throws Exception {
-     //Create a sample market data tick
-       send(createTick());
-
-       // Simple assert to check we had 3 orders created
-    assertEquals("Expected 3 child orders after the tick", 3, container.getState().getChildOrders().size());
-   }
+    public void testDispatchThroughSequencer() throws Exception {
+        send(createTick());
+        assertEquals("Expected 3 child orders after the tick", 3, container.getState().getChildOrders().size());
+    }
 
     @Test
     public void testCanPlaceBuyOrder_SpreadFavorable() {
         // Arrange: favorable conditions
-        double tradeSpread = 2.0;
-        double spreadThreshold = 1.5;
         int maxChildOrder = 3;
 
-        // Mocking child orders
+        // Mocking the behavior of the state for active child orders
         List<ChildOrder> childOrders = Mockito.mock(List.class);
         Mockito.when(childOrders.size()).thenReturn(2);  // Less than maxChildOrder
         Mockito.when(mockState.getActiveChildOrders()).thenReturn(childOrders);
+        Mockito.when(spread.calculateSpread(mockState)).thenReturn(2.0); // Set a favorable spread
 
         // Act: call the method
-        boolean result = OrderActionUtils.canPlaceBuyOrder(mockState, tradeSpread, spreadThreshold, maxChildOrder);
+        boolean result = spread.isFavorable(mockState, maxChildOrder);
 
         // Assert: ensure that the result is true
         assertTrue("Expected the buy order condition to be true", result);
         System.out.println("Test result for testCanPlaceBuyOrder_SpreadFavorable: " + result);
-    } 
+    }
 
-     @Test
-    public void testCanPlaceBuyOrder_SpreadNotFavorable() {
+    @Test
+    public void testCanPlaceBuyOrder_UnFavorableSpread() {
         // Arrange: unfavorable conditions
-        double tradeSpread = 1.0;  // Below the spread threshold
-        double spreadThreshold = 1.5;
         int maxChildOrder = 3;
 
-        // Mocking child orders
+        // Mocking the behavior of the state for active child orders
         List<ChildOrder> childOrders = Mockito.mock(List.class);
         Mockito.when(childOrders.size()).thenReturn(2);  // Less than maxChildOrder
         Mockito.when(mockState.getActiveChildOrders()).thenReturn(childOrders);
 
         // Act: call the method
-        boolean result = OrderActionUtils.canPlaceBuyOrder(mockState, tradeSpread, spreadThreshold, maxChildOrder);
+        boolean result = spread.isUnfavorable(mockState, maxChildOrder);
 
         // Assert: ensure that the result is false
         assertTrue("Expected the buy order condition to be false", !result);
-         System.out.println("Test result for testCanPlaceBuyOrderWhenSpreadNotFavorable: " + result);
-    } 
+        System.out.println("Test result for testCanPlaceBuyOrder_UnFavorableSpread: " + result);
+    }
 
     @Test
     public void testCanPlaceSellOrder_UnfavorableSpread() {
-        //unfavorable conditions
-        double tradeSpread = -0.5;
+        // Arrange: unfavorable conditions
+        double tradeSpread = -0.5; 
         int maxChildOrder = 3;
 
-        // Mocking child orders
+        // Mocking the behavior of the state for active child orders
         List<ChildOrder> childOrders = Mockito.mock(List.class);
         Mockito.when(childOrders.size()).thenReturn(2);  // Less than maxChildOrder
         Mockito.when(mockState.getActiveChildOrders()).thenReturn(childOrders);
+        Mockito.when(spread.calculateSpread(mockState)).thenReturn(tradeSpread);
 
         // Act: call the method
-        boolean result = OrderActionUtils.canPlaceSellOrder(mockState, tradeSpread, maxChildOrder);
+        boolean result = spread.isUnfavorable(mockState, maxChildOrder);
 
         // Assert: ensure that the result is true
         assertTrue("Expected the sell order condition to be true", result);
-        System.out.println("Test result CanPlaceSellOrderInUnfavorableSpread: " + result);
+        System.out.println("Test result for testCanPlaceSellOrder_UnfavorableSpread: " + result);
     }
-
-   /*  @Test
-    public void testCancelOldestActiveOrder() {
-        // Arrange: create two mock orders
-        ChildOrder mockOrder1 = Mockito.mock(ChildOrder.class);  // This will be the oldest
-        ChildOrder mockOrder2 = Mockito.mock(ChildOrder.class);  // This will be the second
-    
-        // Create a list with the oldest order first
-        List<ChildOrder> activeOrders = List.of(mockOrder1, mockOrder2);
-    
-        // Mock the state to return the active orders
-        Mockito.when(mockState.getActiveChildOrders()).thenReturn(activeOrders);
-    
-        // Act: call the method to cancel the order
-        Action cancelAction = OrderActionUtils.cancelActiveOrder(mockState);
-    
-        // Assert: ensure the action is a CancelChildOrder action
-        assertTrue("Expected to return a CancelChildOrder action", cancelAction instanceof CancelChildOrder);
-        
-        // Cast to CancelChildOrder
-        CancelChildOrder cancelChildOrder = (CancelChildOrder) cancelAction;
-        
-        // Assert that the order in cancelChildOrder is the same as mockOrder1 (the oldest order)
-        assertEquals("Expected to cancel the oldest active order", mockOrder1, cancelChildOrder.getOrderToCancel());
-    
-        // Print the action result
-        System.out.println("Cancel Action Result: " + cancelChildOrder);  // This will use the toString() method
-    } */
-    
-
-    
 
     @Test
     public void testNoActiveOrder() {
         // Arrange: simulate a state with no active child orders
-        Mockito.when(mockState.getActiveChildOrders()).thenReturn(null);  // No active orders
-    
+        Mockito.when(mockState.getActiveChildOrders()).thenReturn(null);
+
         // Act: call the method that should attempt to cancel an order
-        Action cancelAction = OrderActionUtils.cancelActiveOrder(mockState);
-    
+        Action cancelAction = OrderAction.cancelActiveOrder(mockState);
+
         // Print the action result
         System.out.println("Cancel Action Result: " + cancelAction);
-    
+
         // Assert: ensure that no cancellation occurs (returns NoAction or similar)
         assertEquals("Expected NoAction when there are no active orders", NoAction.NoAction, cancelAction);
     }
-
 }
