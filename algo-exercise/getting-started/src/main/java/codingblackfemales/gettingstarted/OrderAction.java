@@ -20,10 +20,7 @@ public class OrderAction {
 
   
     
-        public static boolean shouldCancelOrder
-        (SimpleAlgoState state, double tradeSpread, double spreadThreshold, int maxChildOrder) 
-        {return tradeSpread < spreadThreshold && state.getChildOrders().size() >= maxChildOrder;
-        }
+     
 
       /*   public static boolean canPlaceBuyOrder(SimpleAlgoState state, double tradeSpread, double spreadThreshold, int maxChildOrder) {
             if (state.getActiveChildOrders() == null) {
@@ -38,12 +35,14 @@ public class OrderAction {
             }
             return tradeSpread < 0 && state.getChildOrders().size() <= maxChildOrder;
         } */
-        
 
+        public static boolean shouldCancelOrder
+        (SimpleAlgoState state, double tradeSpread, double spreadThreshold, int maxChildOrder) 
+        {return tradeSpread < spreadThreshold && state.getChildOrders().size() >= maxChildOrder;
+        }
+    
         public static Action createBuyOrder(Side BUY, long quantity, long price) {
-            
-            
-            logger.info("[MYALGO] Spread is favorable, Placing a " + BUY + " order with quantity: " + quantity + " and price: " + price);
+             logger.info("[MYALGO] Spread is favorable, Placing a " + BUY + " order with quantity: " + quantity + " and price: " + price);
             return new CreateChildOrder(Side.BUY, quantity, price);
         }
     
@@ -62,15 +61,9 @@ public class OrderAction {
                  if 
                      (state.getActiveChildOrders() == null || state.getActiveChildOrders().isEmpty()) {
                         logger.error("[MYALGO] No active child orders to cancel.");
-                        return NoAction.NoAction;
+                  return NoAction.NoAction;
     
-             }
-             
-
-            
-            
-    
-            
+           }  
             
             return NoAction.NoAction;
         }
