@@ -38,13 +38,6 @@ public class MyAlgoLogic implements AlgoLogic {
             logger.error("[MYALGO] Received null state.");
             return NoAction.NoAction;
         }
-
-      // if (!currentUser.hasPermission("EXECUTE_ALGO")) {
-        //    logger.warn("[MYALGO] User {} does not have permission to execute the algo.", currentUser.getUsername());
-        //    return NoAction.NoAction;
-       // }
-
-      //  logger.info("[MYALGO] User {} authorized, evaluating algo logic...", currentUser.getUsername());
     
         var orderBookAsString = Util.orderBookToString(state);
         logger.info("[MYALGO] The state of the order book is:\n" + orderBookAsString);
@@ -53,30 +46,31 @@ public class MyAlgoLogic implements AlgoLogic {
         BidLevel nearTouch = state.getBidAt(0);
         AskLevel farTouch = state.getAskAt(0);
     
-        //if (nearTouch == null || farTouch == null) {
-          //  logger.error("[MYALGO] Missing bid or ask level data.");
-            //return NoAction.NoAction;
-       // }
+        if (nearTouch == null || farTouch == null) {
+           logger.error("[MYALGO] Missing bid or ask level data.");
+        return NoAction.NoAction;
+        }
     
-       // double tradeSpread = (nearTouch.price - farTouch.price);
-        //logger.info("[MYALGO] The Trade spread: " + tradeSpread);
+       double tradeSpread = (nearTouch.price - farTouch.price);
+        logger.info("[MYALGO] The Trade spread: " + tradeSpread);
     
        
 
-        if (spread.isFavorable(state, maxChildOrder))  {
+        if (Spread.isFavorable(state, tradeSpread, SpreadThreshold, maxChildOrder))  {
             // Place a buy order if the spread is favorable
            long askQuantity = nearTouch.quantity;
             long askPrice = nearTouch.price;
             return OrderAction.createBuyOrder(Side.BUY, askQuantity, askPrice);
         
-        } else if (spread.isUnfavorable(state, maxChildOrder)) {
-            // Place a sell order if the spread is unfavorable and we can place more orders
+        } 
+        else if (Spread.isUnfavorable(state, tradeSpread, maxChildOrder)) {
+            
             long bidQuantity = farTouch.quantity;
             long bidPrice = farTouch.price;
             return OrderAction.createSellOrder(Side.SELL, bidQuantity, bidPrice);
         
-        } else if (spread.isTight(state, maxChildOrder)) {
-            // Cancel active orders if the conditions are met
+        } else if (Spread.isTight(state, tradeSpread, SpreadThreshold, maxChildOrder)) {
+            // Cancel active orders if we have <=3 orders
             return OrderAction.cancelActiveOrder(state);
         } else {
             logger.info("[MYALGO] No trading opportunity, taking no action.");
