@@ -7,12 +7,16 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import codingblackfemales.action.Action;
 import codingblackfemales.action.NoAction;
 import codingblackfemales.algo.AlgoLogic;
 import codingblackfemales.sotw.ChildOrder;
 import codingblackfemales.sotw.SimpleAlgoState;
+import codingblackfemales.sotw.marketdata.AskLevel;
+import codingblackfemales.sotw.marketdata.BidLevel;
 
 /**
  * This test is designed to check your algo behavior in isolation of the order book.
@@ -26,6 +30,8 @@ import codingblackfemales.sotw.SimpleAlgoState;
 public class MyAlgoTest extends AbstractAlgoTest {
 
     private SimpleAlgoState mockState;
+    private BidLevel mockNearTouch;
+    private AskLevel mockFarTouch;
 
     @Override
     public AlgoLogic createAlgoLogic() {
@@ -33,9 +39,17 @@ public class MyAlgoTest extends AbstractAlgoTest {
         return new MyAlgoLogic();
     }
 
+    
     @Before
     public void setUp() {
-        mockState = Mockito.mock(SimpleAlgoState.class);  // Initialize the mock state before tests
+        // Initialize the mock state and levels before tests
+        mockState = mock(SimpleAlgoState.class);  // Mock the state
+        mockNearTouch = mock(BidLevel.class);     // Mock for near touch (best bid)
+        mockFarTouch = mock(AskLevel.class);      // Mock for far touch (best ask)
+        
+        // Mock the best bid and ask levels
+        when(mockState.getBidAt(0)).thenReturn(mockNearTouch);  // Mock bid at level 0
+        when(mockState.getAskAt(0)).thenReturn(mockFarTouch);   // Mock ask at level 0
     }
 
     @Test
@@ -46,6 +60,7 @@ public class MyAlgoTest extends AbstractAlgoTest {
         // Simple assert to check we had 3 orders created
         assertEquals("Expected 3 child orders after the tick", 3, container.getState().getChildOrders().size());
     }
+    
 
     @Test
 public void testCanPlaceBuyOrder_SpreadFavorable() {
@@ -124,6 +139,30 @@ public void testCanPlaceSellOrder_UnfavorableSpread() {
         assertEquals("Expected NoAction when there are no active orders", NoAction.NoAction, cancelAction);
     }
 
-
-
+     @Test
+     public void testTradeSpreadAndSpreadThreshold() {
+         // Arrange: Define price values
+         long nearTouchPrice = 100;  // Example near touch price
+         long farTouchPrice = 102;   // Example far touch price
+         
+         // Set mock price values
+         when(mockNearTouch.getPrice()).thenReturn(nearTouchPrice);  // mock price for near touch
+         when(mockFarTouch.getPrice()).thenReturn(farTouchPrice);    // mock price for far touch
+ 
+         // Act: Calculate tradeSpread and spreadThreshold
+         double tradeSpread = farTouchPrice - nearTouchPrice;
+         double spreadThreshold = 0.02 * nearTouchPrice;
+         System.out.println("Near Touch Price: " + nearTouchPrice);
+         System.out.println("Far Touch Price: " + farTouchPrice);
+         System.out.println("Trade Spread: " + tradeSpread);
+         System.out.println("Spread Threshold: " + spreadThreshold);
+ 
+         // Assert: Check if tradeSpread and spreadThreshold are calculated as expected
+         assertEquals("Trade spread should be 2.0", 2.0, tradeSpread, 0.001);
+         assertEquals("Spread threshold should be 2.0", 2.0, spreadThreshold, 0.001);
+     }
 }
+
+
+
+
