@@ -64,15 +64,16 @@ public abstract class AbstractAlgoTest extends SequencerTestCase {
         encoder.venue(Venue.XLON);
         encoder.instrumentId(123L);
 
+        encoder.bidBookCount(3)
+        .next().price(98L).size(100L)
+        .next().price(95L).size(200L)
+        .next().price(91L).size(300L);
+
         encoder.askBookCount(3)
+                
                 .next().price(100L).size(101L)
                 .next().price(110L).size(200L)
                 .next().price(115L).size(5000L);
-
-        encoder.bidBookCount(3)
-                .next().price(98L).size(100L)
-                .next().price(95L).size(200L)
-                .next().price(91L).size(300L);
 
         encoder.instrumentStatus(InstrumentStatus.CONTINUOUS);
         encoder.source(Source.STREAM);
@@ -95,12 +96,12 @@ public abstract class AbstractAlgoTest extends SequencerTestCase {
         encoder.instrumentId(456L); // Different instrument ID for this tick
     
         // Different market data for bids and asks
-        encoder.askBookCount(2)
+        encoder.bidBookCount(2)
                 .next().price(102L).size(120L)  // Different ask prices and sizes
                 .next().price(107L).size(180L)
                 .next().price(113L).size(200L);
     
-        encoder.bidBookCount(2)
+        encoder.askBookCount(2)
                 .next().price(95L).size(150L)
                 .next().price(90L).size(250L)
                 .next().price(113L).size(230L);
