@@ -35,7 +35,7 @@ public class Spread {
 
 
        //SELL
-        public static boolean isUnfavorable(SimpleAlgoState state, double tradeSpread,double spreadThreshold int maxChildOrder) 
+        public static boolean isUnfavorable(SimpleAlgoState state, double tradeSpread,double spreadThreshold, int maxChildOrder) 
         {return tradeSpread < spreadThreshold && state.getChildOrders().size() >= maxChildOrder; }
 
 
