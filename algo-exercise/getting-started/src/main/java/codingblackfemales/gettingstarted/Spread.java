@@ -27,25 +27,28 @@ public class Spread {
         return spread;
     }*/
 
+    //BUY
     public static boolean isFavorable(SimpleAlgoState state, double tradeSpread, double spreadThreshold, int maxChildOrder) {
         if (state.getActiveChildOrders() == null) {
-            return false;
-        }
-        return tradeSpread >= spreadThreshold && state.getChildOrders().size() < maxChildOrder;
-    }
+            return false;}
+        return tradeSpread >= spreadThreshold && state.getChildOrders().size() < maxChildOrder;}
 
-    public static boolean isUnfavorable(SimpleAlgoState state, double tradeSpread, int maxChildOrder) {
+
+       //SELL
+        public static boolean isUnfavorable(SimpleAlgoState state, double tradeSpread,double spreadThreshold int maxChildOrder) 
+        {return tradeSpread < spreadThreshold && state.getChildOrders().size() >= maxChildOrder; }
+
+
+
+   //CANCEL ACTIVE ORDERS
+    public static boolean isNegative(SimpleAlgoState state, double tradeSpread, int maxChildOrder) {
         if (state.getActiveChildOrders() == null) {
             return false;
         }
-        return tradeSpread < 0 && state.getChildOrders().size() < maxChildOrder;
-    } 
+        return tradeSpread < 0 && state.getChildOrders().size() < maxChildOrder; } 
     
 
-    // Check if the spread is tight
-    public static boolean isTight(SimpleAlgoState state, double tradeSpread, 
-    double spreadThreshold, int maxChildOrder) 
-        {return tradeSpread < spreadThreshold && state.getChildOrders().size() >= maxChildOrder;
-        }
+    
+    
 
 }
