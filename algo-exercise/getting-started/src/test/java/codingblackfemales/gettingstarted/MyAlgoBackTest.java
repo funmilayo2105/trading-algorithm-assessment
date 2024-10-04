@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 import codingblackfemales.algo.AlgoLogic;
+import codingblackfemales.sotw.ChildOrder;
 
 /**
  * This test plugs together all of the infrastructure, including the order book (which you can trade against)
@@ -32,11 +33,32 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
         //ADD asserts when you have implemented your algo logic
         assertEquals(container.getState().getChildOrders().size(), 3);
 
-        //when: market data moves towards us
-        send(createTick2());
-
+        // Simulate spread widening by sending the custom tick
+       // send(createWideningSpreadTick());
         //then: get the state
+        //var state = container.getState();
         var state = container.getState();
+         // Calculate filled quantity
+    long filledQuantity = state.getChildOrders().stream()
+    .map(ChildOrder::getFilledQuantity) // Extract filled quantities from child orders
+        .reduce(Long::sum).get(); // Sum the filled quantities
+
+        //System.out.println("Filled Quantity: " + filledQuantity);
+    //System.out.println("Child Orders: " + state.getChildOrders());
+    // Step 4: Check the filled quantity against an expected value
+    assertEquals(101, filledQuantity);
+
+   // send(createTick2());
+    
+  //  assertEquals(container.getState().getChildOrders().size(), 3);
+
+
+    //TODO: CREATE TICKS THAT WOULD SIMULATE CHEAPER,ORDERBOOK to sell the 101 quantity.
+    //check why getting stack overflow 
+    
+}
+
+        
 
         //Check things like filled quantity, cancelled order count etc....
         //long filledQuantity = state.getChildOrders().stream().map(ChildOrder::getFilledQuantity).reduce(Long::sum).get();
@@ -44,4 +66,4 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
         //assertEquals(225, filledQuantity);
     }
 
-}
+
