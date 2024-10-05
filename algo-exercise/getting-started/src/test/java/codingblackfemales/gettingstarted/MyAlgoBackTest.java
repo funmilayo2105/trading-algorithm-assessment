@@ -19,19 +19,22 @@ import codingblackfemales.sotw.ChildOrder;
  *
  */
 public class MyAlgoBackTest extends AbstractAlgoBackTest {
+    private final static int maximumOrders = 1;
 
     @Override
     public AlgoLogic createAlgoLogic() {
-        return new MyAlgoLogic();
+        return new MyAlgoLogic(maximumOrders);
+
     }
 
     @Test
     public void testExampleBackTest() throws Exception {
+        
         //create a sample market data tick....
         send(createTick());
 
         //ADD asserts when you have implemented your algo logic
-        assertEquals(container.getState().getChildOrders().size(), 3);
+        assertEquals(container.getState().getChildOrders().size(),maximumOrders);
 
         // Simulate spread widening by sending the custom tick
        // send(createWideningSpreadTick());
@@ -46,9 +49,11 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
         //System.out.println("Filled Quantity: " + filledQuantity);
     //System.out.println("Child Orders: " + state.getChildOrders());
     // Step 4: Check the filled quantity against an expected value
-    assertEquals(101, filledQuantity);
+    assertEquals(55, filledQuantity);
 
-   // send(createTick2());
+  //  send(belowThresholdTick2());
+    send (createNegativeSpreadTick());
+    assertEquals(container.getState().getChildOrders().size(),maximumOrders);
     
   //  assertEquals(container.getState().getChildOrders().size(), 3);
 
