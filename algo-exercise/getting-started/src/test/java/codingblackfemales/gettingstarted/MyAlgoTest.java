@@ -33,10 +33,11 @@ public class MyAlgoTest extends AbstractAlgoTest {
     private BidLevel mockNearTouch;
     private AskLevel mockFarTouch;
 
+    private MyAlgoLogic algoLogic;
     @Override
     public AlgoLogic createAlgoLogic() {
         // This adds your algo logic to the container classes
-        return new MyAlgoLogic();
+        return new MyAlgoLogic(3);
     }
 
     
@@ -83,32 +84,11 @@ public void testCanPlaceBuyOrder_SpreadFavorable() {
 }
 
 
-
-     @Test
-    public void testCanPlaceBuyOrder_SpreadNotFavorable() {
-        // Arrange: unfavorable conditions
-        double tradeSpread = 1.0;  // Below the spread threshold
-        double spreadThreshold = 1.5;
-        int maxChildOrder = 3;
-    
-        // Mocking child orders
-        List<ChildOrder> childOrders = Mockito.mock(List.class);
-        Mockito.when(childOrders.size()).thenReturn(2);  // Less than maxChildOrder
-        Mockito.when(mockState.getActiveChildOrders()).thenReturn(childOrders);
-    
-        // Act: call the method
-        boolean result = Spread.isUnfavorable(mockState, tradeSpread, maxChildOrder);
-    
-        // Assert: ensure that the result is false
-        assertTrue("Expected the buy order condition to be false", !result);
-        System.out.println("Test result for testCanPlaceBuyOrderWhenSpreadNotFavorable: " + result);
-    }
-    
-
-    @Test
-public void testCanPlaceSellOrder_UnfavorableSpread() {
+@Test
+public void testCannotPlaceBuyOrder_SpreadIsUnfavorable() {
     // Arrange: unfavorable conditions
-    double tradeSpread = -0.5;  // Negative spread (unfavorable for buy)
+    double tradeSpread = 0.5;  // below the spread threshold
+    double spreadThreshold = 1.5;
     int maxChildOrder = 3;
 
     // Mocking child orders
@@ -116,13 +96,40 @@ public void testCanPlaceSellOrder_UnfavorableSpread() {
     Mockito.when(childOrders.size()).thenReturn(2);  // Less than maxChildOrder
     Mockito.when(mockState.getActiveChildOrders()).thenReturn(childOrders);
 
-    // Act: call the method (using isUnfavorable for selling condition)
-    boolean result = Spread.isUnfavorable(mockState, tradeSpread, maxChildOrder);
+    // Act: call the method
+    boolean result = Spread.isUnfavorable(mockState, tradeSpread, spreadThreshold, maxChildOrder);
 
-    // Assert: ensure that the result is true
+    // Assert: ensure that the result is True
+    assertTrue("Expected the buy order condition to be true", result);
+    System.out.println("Test result for testCannotPlaceBuyOrder_SpreadnotFavorable: " + result);
+}
+  
+
+  
+
+@Test
+public void testCannotPlaceSellOrder_SpreadIsUnfavorable() {
+    // Arrange: unfavorable conditions
+    double tradeSpread = 0.2;  // below the spread threshold
+    double spreadThreshold = 1.5;
+    int maxChildOrder = 3;
+
+    // Mocking child orders
+    List<ChildOrder> childOrders = Mockito.mock(List.class);
+    Mockito.when(childOrders.size()).thenReturn(2);  // Less than maxChildOrder
+    Mockito.when(mockState.getActiveChildOrders()).thenReturn(childOrders);
+
+    // Act: call the method
+    boolean result = Spread.isUnfavorable(mockState, tradeSpread, spreadThreshold, maxChildOrder);
+
+    // Assert: ensure that the result is True
     assertTrue("Expected the sell order condition to be true", result);
-    System.out.println("Test result for testCanPlaceSellOrder_UnfavorableSpread: " + result);
-} 
+    System.out.println("Test result for testCannotPlaceSellOrder_SpreadnotFavorable: " + result);
+}
+  
+
+
+    
 
     @Test
     public void testNoActiveOrder() {
