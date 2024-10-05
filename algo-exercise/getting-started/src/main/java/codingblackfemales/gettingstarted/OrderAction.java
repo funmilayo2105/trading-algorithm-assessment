@@ -8,8 +8,6 @@ import codingblackfemales.action.CancelChildOrder;
 import codingblackfemales.action.CreateChildOrder;
 import codingblackfemales.action.NoAction;
 import codingblackfemales.sotw.SimpleAlgoState;
-import codingblackfemales.sotw.marketdata.AskLevel;
-import codingblackfemales.sotw.marketdata.BidLevel;
 import messages.order.Side;
 
 public class OrderAction {
@@ -22,24 +20,27 @@ private static double spreadThreshold;
  
 
   
+       //CANCEL
         public static boolean shouldCancelOrder
         (SimpleAlgoState state, double tradeSpread, double spreadThreshold, int maxChildOrder) 
         {return tradeSpread < spreadThreshold && state.getChildOrders().size() >= maxChildOrder;
         }
     
+       //BUY ORDER
         public static Action createBuyOrder(Side BUY, long quantity, long price) {
              logger.info("[MYALGO] Spread is favorable, Placing a " + BUY + " order with quantity: " + quantity + " and price: " + price);
             return new CreateChildOrder(Side.BUY, quantity, price);
         }
     
-        public static Action createSellOrder(SimpleAlgoState state, long quantity, long price)
+       //SELL ORDER
+        public static Action createSellOrder(Side sell, long quantity, long price)
          {
-             BidLevel farTouch = state.getBidAt(0);
-        if (farTouch == null) {
-            logger.error("[MYALGO] Unable to place SELL order, farTouch is null.");
-            return NoAction.NoAction;
-        }
-        AskLevel nearTouch = state.getAskAt(0);
+            // BidLevel farTouch = state.getBidAt(0);
+        //if (farTouch == null) {
+           // logger.error("[MYALGO] Unable to place SELL order, farTouch is null.");
+           // return NoAction.NoAction;
+       // }
+       /*  AskLevel nearTouch = state.getAskAt(0);
         // Calculate trade spread and set spread threshold
         double tradeSpread = nearTouch.price - farTouch.price;
         logger.info("[MYALGO] The Trade spread: " + tradeSpread);
@@ -48,13 +49,15 @@ private static double spreadThreshold;
 
         long bidQuantity = farTouch.quantity;
         long bidPrice = (long) (farTouch.price + (tradeSpread / 2)); // place a sell order slightly above the best ask
-        logger.info("[MYALGO] Placing a SELL order with quantity: " + bidQuantity + " and price: " + bidPrice);
-        return new CreateChildOrder(Side.SELL, bidQuantity, bidPrice);
+    */    
+        logger.info("[MYALGO] Spread is negative, Placing a SELL order with quantity: " + quantity + " and price: " + price);
+        return new CreateChildOrder(Side.SELL, quantity, price);
 
             //logger.info("[MYALGO] Spread is unfavorable,  Placing a " + SELL + " order with quantity: " + quantity + " and price: " + price);
             //return new CreateChildOrder(Side.SELL, quantity, price);
         }
     
+       //CANCEL ACTIVE ORDER
         public static Action cancelActiveOrder(SimpleAlgoState state) {
             if (state.getActiveChildOrders() != null && !state.getActiveChildOrders().isEmpty()) {
                 logger.info("[MYALGO] Spread is negative, canceling an active child order...");
@@ -67,7 +70,7 @@ private static double spreadThreshold;
                         logger.error("[MYALGO] No active child orders to cancel.");
                   return NoAction.NoAction;
     
-           }  
+           } 
             
             return NoAction.NoAction;
         }
