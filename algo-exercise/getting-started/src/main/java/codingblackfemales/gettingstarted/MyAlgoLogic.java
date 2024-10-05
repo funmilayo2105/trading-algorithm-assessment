@@ -15,10 +15,20 @@ import messages.order.Side;
 public class MyAlgoLogic implements AlgoLogic {
 
     private static final Logger logger = LoggerFactory.getLogger(MyAlgoLogic.class);
-    private static final int maxChildOrder =3;
+    private final  int maxChildOrder;
     private double spreadThreshold;
     private RiskManagement riskManagement;
     private double entryPrice; // The price at which you enter a trade
+    private BidLevel currentBid;
+    private double boughtPrice;
+    private long marketPrice;
+    private Object stopLossPrice;
+    private Object takeProfitPrice;
+    private double bidPrice;
+    public MyAlgoLogic(Integer maxOrder){
+        maxChildOrder=maxOrder;
+
+    }
 
     @Override
     public Action evaluate(SimpleAlgoState state) {
@@ -63,25 +73,56 @@ public class MyAlgoLogic implements AlgoLogic {
             return OrderAction.createBuyOrder(Side.BUY, askQuantity, askPrice);
         
         } 
-         else if (Spread.isUnfavorable(state, tradeSpread, spreadThreshold, maxChildOrder)) {
+       //  else if (Spread.isUnfavorable(state, tradeSpread, spreadThreshold, maxChildOrder)) {
+         //|| bidPrice >askPrice) 
             // Place a sell order if the spread is unfavorable
-            long bidQuantity = nearTouch.quantity;
-            long bidPrice = nearTouch.price; // Sell slightly above the best ask
+            //long bidQuantity = nearTouch.quantity;
+           // long bidPrice = nearTouch.price; // Sell slightly above the best ask
 
             // Set the entry price for risk management
+            //this.entryPrice = bidPrice;
+            //double stopLossPrice = riskManagement.calculateStopLossPrice(entryPrice);
+            //double takeProfitPrice = riskManagement.calculateTakeProfitPrice(entryPrice);
+
+           // logger.info(String.format("[MYALGO] Spread is below Threshold. Waiting for favorable spread"));
+           // return NoAction.NoAction;
+
+
+            //NEGATIVE SPREAD
+        
+          else if (Spread.isNegative(state, tradeSpread, maxChildOrder)) {
+           /* marketPrice = nearTouch.price;
+            boughtPrice= entryPrice;
+
+             if (marketPrice > boughtPrice) {
+
+                
+                this.entryPrice = bidPrice;
+                double stopLossPrice = riskManagement.calculateStopLossPrice(entryPrice);
+                double takeProfitPrice = riskManagement.calculateTakeProfitPrice(entryPrice);
+                logger.info(String.format("[MYALGO] Placing Sell Order: %s, Stop Loss: %s, Take Profit: %s", bidPrice, stopLossPrice, takeProfitPrice));
+*/
+
+                long bidQuantity = nearTouch.quantity;
+                long bidPrice= nearTouch.price;
+    
+               
+                return OrderAction.createSellOrder(Side.SELL, bidQuantity,bidPrice);
+
+            }
+            // Cancel active orders if we have <=3 orders
+           // return OrderAction.cancelActiveOrder(state);
+           /*  long bidQuantity = nearTouch.quantity;
+            long bidPrice= nearTouch.price;
+
             this.entryPrice = bidPrice;
             double stopLossPrice = riskManagement.calculateStopLossPrice(entryPrice);
-            double takeProfitPrice = riskManagement.calculateTakeProfitPrice(entryPrice);
+         
+            double takeProfitPrice = riskManagement.calculateTakeProfitPrice(entryPrice);*/
 
-            logger.info(String.format("[MYALGO] Placing Sell Order: %s, Stop Loss: %s, Take Profit: %s", bidPrice, stopLossPrice, takeProfitPrice));
-            return OrderAction.createSellOrder(state, bidQuantity, bidPrice);
-        
-        } else if (Spread.isNegative(state, tradeSpread, maxChildOrder)) {
-            // Cancel active orders if we have <=3 orders
-            return OrderAction.cancelActiveOrder(state);
-        } else {
-            logger.info("[MYALGO] No trading opportunity, taking no action.");
             return NoAction.NoAction;
+        
         }
-    }
+       
 }
+
