@@ -60,7 +60,7 @@ private static double spreadThreshold;
        //CANCEL ACTIVE ORDER
         public static Action cancelActiveOrder(SimpleAlgoState state) {
             if (state.getActiveChildOrders() != null && !state.getActiveChildOrders().isEmpty()) {
-                logger.info("[MYALGO] Spread is negative, canceling an active child order...");
+                logger.info("[MYALGO]Cancelling active child order...");
                 return new CancelChildOrder(state.getActiveChildOrders().get(0));
 
                 //logs an error if an active order is not present
