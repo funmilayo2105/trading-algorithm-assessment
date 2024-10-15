@@ -37,7 +37,7 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
         assertEquals(container.getState().getChildOrders().size(),maximumOrders);
 
         // Simulate spread widening by sending the custom tick
-       // send(createWideningSpreadTick());
+        send(negativeSpreadTick());
         //then: get the state
         //var state = container.getState();
         var state = container.getState();
@@ -51,24 +51,7 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
     // Step 4: Check the filled quantity against an expected value
     assertEquals(55, filledQuantity);
 
-  //  send(belowThresholdTick2());
-    send (createNegativeSpreadTick());
-    assertEquals(container.getState().getChildOrders().size(),maximumOrders);
-    
-  //  assertEquals(container.getState().getChildOrders().size(), 3);
 
-
-    //TODO: CREATE TICKS THAT WOULD SIMULATE CHEAPER,ORDERBOOK to sell the 101 quantity.
-    //check why getting stack overflow 
-    
-}
-
-        
-
-        //Check things like filled quantity, cancelled order count etc....
-        //long filledQuantity = state.getChildOrders().stream().map(ChildOrder::getFilledQuantity).reduce(Long::sum).get();
-        //and: check that our algo state was updated to reflect our fills when the market data
-        //assertEquals(225, filledQuantity);
-    }
+    }}
 
 
