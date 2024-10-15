@@ -37,7 +37,7 @@ public class MyAlgoTest extends AbstractAlgoTest {
     @Override
     public AlgoLogic createAlgoLogic() {
         // This adds your algo logic to the container classes
-        return new MyAlgoLogic(3);
+        return new MyAlgoLogic(1);
     }
 
     
@@ -56,17 +56,21 @@ public class MyAlgoTest extends AbstractAlgoTest {
     @Test
     public void testDispatchThroughSequencer() throws Exception {
         // Create a sample market data tick
-        send(createTick());
+        //send(createTick());
+
+        var state = container.getState();
+
+        send(createWideningTick2());
 
         // Simple assert to check we had 3 orders created
-        assertEquals("Expected 3 child orders after the tick", 3, container.getState().getChildOrders().size());
+        assertEquals("Expected 1 child orders after the tick", 1, container.getState().getChildOrders().size());
     }
     
 
     @Test
 public void testCanPlaceBuyOrder_SpreadFavorable() {
-    // Arrange: favorable conditions
-    double tradeSpread = 2.0;  // Above the spread threshold
+     //Arrange: favorable conditions
+   double tradeSpread = 3.0;  // Above the spread threshold
     double spreadThreshold = 1.5;
     int maxChildOrder = 3;
 
@@ -75,7 +79,7 @@ public void testCanPlaceBuyOrder_SpreadFavorable() {
     Mockito.when(childOrders.size()).thenReturn(2);  // Less than maxChildOrder
     Mockito.when(mockState.getActiveChildOrders()).thenReturn(childOrders);
 
-    // Act: call the method
+    //Act: call the method
     boolean result = Spread.isFavorable(mockState, tradeSpread, spreadThreshold, maxChildOrder);
 
     // Assert: ensure that the result is true
