@@ -34,10 +34,16 @@ public class Spread {
         return tradeSpread >= spreadThreshold && state.getChildOrders().size() < maxChildOrder;}
 
 
-       //WAIT FOR SPREAD, TAKE NO ACTION
+       //WAIT FOR SPREAD, TAKE NO ACTION WHEN SPREAD IS <THRESHOLD
         public static boolean isUnfavorable(SimpleAlgoState state, double tradeSpread,double spreadThreshold, int maxChildOrder) 
         {return tradeSpread < spreadThreshold && state.getChildOrders().size() <= maxChildOrder; }
 
+
+        //SPREAD WIDE
+        public static boolean isWide (SimpleAlgoState state, double tradeSpread,double spreadThreshold, 
+        double wideSpreadThreshold, int maxChildOrder){
+            return tradeSpread>= wideSpreadThreshold ;
+        }
 
 
    //SELL ORDER 
@@ -48,6 +54,8 @@ public class Spread {
         return tradeSpread < 0 && state.getChildOrders().size() < maxChildOrder; 
     
     }
+
+    
     
     
 
