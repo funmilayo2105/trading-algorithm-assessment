@@ -80,7 +80,7 @@ public abstract class AbstractAlgoTest extends SequencerTestCase {
 
         return directBuffer;
     }
-    protected UnsafeBuffer createTick2() {
+    protected UnsafeBuffer createWideningTick2() {
 
         final MessageHeaderEncoder headerEncoder = new MessageHeaderEncoder();
         final BookUpdateEncoder encoder = new BookUpdateEncoder();
@@ -96,12 +96,12 @@ public abstract class AbstractAlgoTest extends SequencerTestCase {
         encoder.instrumentId(456L); // Different instrument ID for this tick
     
         // Different market data for bids and asks
-        encoder.bidBookCount(2)
+        encoder.bidBookCount(3)
                 .next().price(102L).size(120L)  // Different ask prices and sizes
                 .next().price(107L).size(180L)
                 .next().price(113L).size(200L);
     
-        encoder.askBookCount(2)
+        encoder.askBookCount(3)
                 .next().price(95L).size(150L)
                 .next().price(90L).size(250L)
                 .next().price(113L).size(230L);
@@ -110,9 +110,9 @@ public abstract class AbstractAlgoTest extends SequencerTestCase {
         encoder.source(Source.STREAM);
     
         return directBuffer;
-    }
-    
-
-
-
+    } 
 }
+   
+
+
+    
