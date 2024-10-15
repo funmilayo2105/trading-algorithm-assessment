@@ -126,7 +126,7 @@ public abstract class AbstractAlgoBackTest extends SequencerTestCase {
         return directBuffer;
     }
 
-    protected UnsafeBuffer createNegativeSpreadTick() {
+    protected UnsafeBuffer negativeSpreadTick() {
         final MessageHeaderEncoder headerEncoder = new MessageHeaderEncoder();
         final BookUpdateEncoder encoder = new BookUpdateEncoder();
     
@@ -136,7 +136,7 @@ public abstract class AbstractAlgoBackTest extends SequencerTestCase {
         // Write the encoded output to the direct buffer
         encoder.wrapAndApplyHeader(directBuffer, 0, headerEncoder);
     
-        // Set the fields to desired values for the widening spread tick
+        // Set the fields to desired values for the negative spread tick
         encoder.venue(Venue.XLON);
         encoder.instrumentId(123L);
         encoder.source(Source.STREAM);
