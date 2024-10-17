@@ -18,14 +18,9 @@ public class MyAlgoLogic implements AlgoLogic {
     private final  int maxChildOrder;
     private double spreadThreshold;
     private double wideSpreadThreshold;
-    private RiskManagement riskManagement;
-    private double entryPrice; // The price at which you enter a trade
-    private BidLevel currentBid;
+    private double entryPrice; // The price at which i enter the trade (by/sell)
     private double boughtPrice;
     private long marketPrice;
-    private Object stopLossPrice;
-    private Object takeProfitPrice;
-    private double bidPrice;
     public MyAlgoLogic(Integer maxOrder){
         maxChildOrder=maxOrder;
 
@@ -41,11 +36,6 @@ public class MyAlgoLogic implements AlgoLogic {
         var orderBookAsString = Util.orderBookToString(state);
         logger.info("[MYALGO] The state of the order book is:\n" + orderBookAsString);
     
-        // Initialize risk management with parameters
-        if (riskManagement == null) {
-            this.riskManagement = new RiskManagement(10000, 500, 0.01, 0.02, 0.04);
-        }
-    
         BidLevel nearTouch = state.getBidAt(0); // Highest buy price
         AskLevel farTouch = state.getAskAt(0); // Lowest sell price
     
@@ -57,10 +47,13 @@ public class MyAlgoLogic implements AlgoLogic {
         double tradeSpread = (farTouch.price - nearTouch.price);
         logger.info("[MYALGO] The Trade spread: " + tradeSpread);
         spreadThreshold = 0.02 * nearTouch.price;
-        double wideSpreadThreshold = 0.05 * nearTouch.price;
+        wideSpreadThreshold = 0.05 * nearTouch.price;
+
+        SpreadStatus spreadStatus = Spread.getSpreadStatus(state, tradeSpread, spreadThreshold, wideSpreadThreshold);
+        boolean childOrdersSizeLessThanMax = state.getChildOrders().size() < maxChildOrder;
     
-        // Handle negative spread scenario
-        if (Spread.isNegative(state, tradeSpread, maxChildOrder)) {
+        //SELL WHEN SPREAD<0
+        if (spreadStatus == SpreadStatus.NEGATIVE && childOrdersSizeLessThanMax){
             marketPrice = nearTouch.price;
             boughtPrice = entryPrice;
     
@@ -75,13 +68,16 @@ public class MyAlgoLogic implements AlgoLogic {
                 logger.info(String.format("[MYALGO] Placing Sell Order of Price: %s, Stop Loss: %s, Take Profit: %s", 
                         bidPrice, stopLossPrice, takeProfitPrice));
     
-                return OrderAction.createSellOrder(Side.SELL, bidQuantity, bidPrice);
+                return OrderAction.createOrder(Side.SELL, bidQuantity, bidPrice);
             } 
-        } else if (Spread.isFavorable(state, tradeSpread, spreadThreshold, maxChildOrder)) {
-            long askQuantity = 55;
+
+
+            //BUY WHEN FAVORABLE
+        }   if (spreadStatus == SpreadStatus.FAVOURABLE && childOrdersSizeLessThanMax) {
+            long askQuantity = farTouch.quantity;
             long askPrice = farTouch.price;
     
-            // Risk management measures
+     
             this.entryPrice = askPrice;
             double stopLossPrice = entryPrice - (0.02 * entryPrice); // 2% below entry price
             double takeProfitPrice = entryPrice + (0.04 * entryPrice); // 4% above entry price
@@ -89,13 +85,15 @@ public class MyAlgoLogic implements AlgoLogic {
             logger.info(String.format("[MYALGO] Placing Buy Order of Price: %s, Stop Loss: %s, Take Profit: %s",
                     askPrice, stopLossPrice, takeProfitPrice));
     
-            return OrderAction.createBuyOrder(Side.BUY, askQuantity, askPrice);
-    
-        } else if (Spread.isUnfavorable(state, tradeSpread, spreadThreshold, maxChildOrder)) {
+            return OrderAction.createOrder(Side.BUY, askQuantity, askPrice);
+
+            //WAIT WHEN UNFAVORABLE
+        }   if (spreadStatus == SpreadStatus.UNFAVOURABLE && childOrdersSizeLessThanMax) {
             logger.info("[MYALGO] Spread is below Threshold. Waiting for favorable spread");
             return NoAction.NoAction;
     
-        } else if (Spread.isWide(state, tradeSpread, spreadThreshold, wideSpreadThreshold, maxChildOrder)) {
+            //CANCEL OLDEST CHILD ORDER WHEN WIDE 
+        }   if (spreadStatus == SpreadStatus.WIDE) {
             logger.warn("[MYALGO] Spread is too wide. Cancelling active order due to high volatility.");
             return OrderAction.cancelActiveOrder(state);
         }
