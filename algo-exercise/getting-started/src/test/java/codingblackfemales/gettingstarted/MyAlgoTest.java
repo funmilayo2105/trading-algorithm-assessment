@@ -67,11 +67,12 @@ public class MyAlgoTest extends AbstractAlgoTest {
     }
     
 
-    @Test
+     @Test
 public void testCanPlaceBuyOrder_SpreadFavorable() {
      //Arrange: favorable conditions
    double tradeSpread = 3.0;  // Above the spread threshold
     double spreadThreshold = 1.5;
+    double wideSpreadThreshold = 4;
     int maxChildOrder = 3;
 
     // Mocking child orders
@@ -80,11 +81,15 @@ public void testCanPlaceBuyOrder_SpreadFavorable() {
     Mockito.when(mockState.getActiveChildOrders()).thenReturn(childOrders);
 
     //Act: call the method
-    boolean result = Spread.isFavorable(mockState, tradeSpread, spreadThreshold, maxChildOrder);
+    SpreadStatus spreadStatus = Spread.getSpreadStatus(mockState, tradeSpread, spreadThreshold, wideSpreadThreshold);
+
+        boolean canPlaceBuyOrder = (spreadStatus == SpreadStatus.FAVOURABLE) && 
+                                   (childOrders.size() < maxChildOrder);
+
 
     // Assert: ensure that the result is true
-    assertTrue("Expected the buy order condition to be true", result);
-    System.out.println("Test result for testCanPlaceBuyOrder_SpreadFavorable: " + result);
+    assertTrue("Expected the buy order condition to be true", canPlaceBuyOrder);
+    System.out.println("Test result for testCanPlaceBuyOrder_SpreadFavorable: " + canPlaceBuyOrder);
 }
 
 
@@ -93,7 +98,9 @@ public void testCannotPlaceBuyOrder_SpreadIsUnfavorable() {
     // Arrange: unfavorable conditions
     double tradeSpread = 0.5;  // below the spread threshold
     double spreadThreshold = 1.5;
+    double wideSpreadThreshold =4;
     int maxChildOrder = 3;
+
 
     // Mocking child orders
     List<ChildOrder> childOrders = Mockito.mock(List.class);
@@ -101,11 +108,15 @@ public void testCannotPlaceBuyOrder_SpreadIsUnfavorable() {
     Mockito.when(mockState.getActiveChildOrders()).thenReturn(childOrders);
 
     // Act: call the method
-    boolean result = Spread.isUnfavorable(mockState, tradeSpread, spreadThreshold, maxChildOrder);
+    SpreadStatus spreadStatus = Spread.getSpreadStatus(mockState, tradeSpread, spreadThreshold, wideSpreadThreshold);
+
+    boolean cannotPlaceBuyOrder = (spreadStatus == SpreadStatus.UNFAVOURABLE) && 
+                               (childOrders.size() < maxChildOrder);
+
 
     // Assert: ensure that the result is True
-    assertTrue("Expected the buy order condition to be true", result);
-    System.out.println("Test result for testCannotPlaceBuyOrder_SpreadnotFavorable: " + result);
+    assertTrue("Expected the buy order condition to be true", cannotPlaceBuyOrder);
+    System.out.println("Test result for testCannotPlaceBuyOrder_SpreadnotFavorable: " + cannotPlaceBuyOrder);
 }
   
 
@@ -116,6 +127,7 @@ public void testCannotPlaceSellOrder_SpreadIsUnfavorable() {
     // Arrange: unfavorable conditions
     double tradeSpread = 0.2;  // below the spread threshold
     double spreadThreshold = 1.5;
+    double wideSpreadThreshold = 4.0;
     int maxChildOrder = 3;
 
     // Mocking child orders
@@ -124,11 +136,14 @@ public void testCannotPlaceSellOrder_SpreadIsUnfavorable() {
     Mockito.when(mockState.getActiveChildOrders()).thenReturn(childOrders);
 
     // Act: call the method
-    boolean result = Spread.isUnfavorable(mockState, tradeSpread, spreadThreshold, maxChildOrder);
+    SpreadStatus spreadStatus = Spread.getSpreadStatus(mockState, tradeSpread, spreadThreshold, wideSpreadThreshold);
+
+    boolean cannotPlaceSellOrder = (spreadStatus == SpreadStatus.UNFAVOURABLE) && 
+                               (childOrders.size() < maxChildOrder);
 
     // Assert: ensure that the result is True
-    assertTrue("Expected the sell order condition to be true", result);
-    System.out.println("Test result for testCannotPlaceSellOrder_SpreadnotFavorable: " + result);
+    assertTrue("Expected the sell order condition to be true", cannotPlaceSellOrder);
+    System.out.println("Test result for testCannotPlaceSellOrder_SpreadnotFavorable: " + cannotPlaceSellOrder);
 }
   
 
@@ -141,14 +156,27 @@ public void testCannotPlaceSellOrder_SpreadIsUnfavorable() {
         Mockito.when(mockState.getActiveChildOrders()).thenReturn(null);  // No active orders
     
         // Act: call the method that should attempt to cancel an order
-        Action cancelAction = OrderAction.cancelActiveOrder(mockState);  // Adjust to your logic in Spread
+        Action cancelAction = OrderAction.cancelActiveOrder(mockState); 
     
         // Print the action result
         System.out.println("Cancel Action Result: " + cancelAction);
     
-        // Assert: ensure that no cancellation occurs (returns NoAction or similar)
+        // Assert: ensure that no cancellation occurs
         assertEquals("Expected NoAction when there are no active orders", NoAction.NoAction, cancelAction);
     }
+    @Test
+public void testActiveOrderToCancel() {
+    // Arrange: simulate a state with 4 active child orders
+   
+    List<ChildOrder> childOrders = Mockito.mock(List.class);
+    Mockito.when(childOrders.size()).thenReturn(4);  // more than maxChildOrder
+    Mockito.when(mockState.getActiveChildOrders()).thenReturn(childOrders);
+    Action cancelAction = OrderAction.cancelActiveOrder(mockState); 
+    
+    System.out.println("Cancel Action Result: " + cancelAction);
+    assertEquals("Expected CancelAction when there are 4 active orders", cancelAction);
+}
+
 
      @Test
      public void testTradeSpreadAndSpreadThreshold() {
