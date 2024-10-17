@@ -1,17 +1,19 @@
 package codingblackfemales.sotw;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import codingblackfemales.service.MarketDataService;
 import codingblackfemales.service.OrderService;
 import codingblackfemales.sotw.marketdata.AskLevel;
 import codingblackfemales.sotw.marketdata.BidLevel;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 public class SimpleAlgoStateImpl implements SimpleAlgoState {
 
     public final MarketDataService marketDataService;
     public final OrderService orderService;
+
+  
 
     public SimpleAlgoStateImpl(final MarketDataService marketDataService, final OrderService orderService) {
         this.marketDataService = marketDataService;
@@ -58,3 +60,6 @@ public class SimpleAlgoStateImpl implements SimpleAlgoState {
         return orderService.children().stream().filter(order -> order.getState() != OrderState.CANCELLED).collect(Collectors.toList());
     }
 }
+
+
+    
