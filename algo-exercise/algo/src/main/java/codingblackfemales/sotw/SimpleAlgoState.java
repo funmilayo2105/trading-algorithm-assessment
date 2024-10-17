@@ -1,11 +1,13 @@
 package codingblackfemales.sotw;
 
+import java.util.List;
+
 import codingblackfemales.sotw.marketdata.AskLevel;
 import codingblackfemales.sotw.marketdata.BidLevel;
 
-import java.util.List;
-
 public interface SimpleAlgoState {
+
+  
 
     public String getSymbol();
 
@@ -20,4 +22,14 @@ public interface SimpleAlgoState {
     public List<ChildOrder> getActiveChildOrders();
 
     public long getInstrumentId();
+
+
+
+    
+    
+
+
+
+
+
 }
