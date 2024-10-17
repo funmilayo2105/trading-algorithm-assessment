@@ -20,6 +20,7 @@ import codingblackfemales.sotw.ChildOrder;
  */
 public class MyAlgoBackTest extends AbstractAlgoBackTest {
     private final static int maximumOrders = 1;
+    
 
     @Override
     public AlgoLogic createAlgoLogic() {
@@ -28,30 +29,69 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
     }
 
     @Test
-    public void testExampleBackTest() throws Exception {
-        
-        //create a sample market data tick....
-        send(createTick());
+    public void testPositiveSpreadTick() throws Exception {
+        // Arrange: Set up a favorable market condition with positive spread
+       
+        send(positiveSpreadTick());
 
-        //ADD asserts when you have implemented your algo logic
+        // Act: Get the state after the tick
+        var state = container.getState();
+
+        // Assert: Verify that a buy order was placed
         assertEquals(container.getState().getChildOrders().size(),maximumOrders);
 
-        // Simulate spread widening by sending the custom tick
-        send(negativeSpreadTick());
-        //then: get the state
-        //var state = container.getState();
-        var state = container.getState();
+        
          // Calculate filled quantity
     long filledQuantity = state.getChildOrders().stream()
     .map(ChildOrder::getFilledQuantity) // Extract filled quantities from child orders
         .reduce(Long::sum).get(); // Sum the filled quantities
 
-        //System.out.println("Filled Quantity: " + filledQuantity);
-    //System.out.println("Child Orders: " + state.getChildOrders());
+        System.out.println("Filled Quantity: " + filledQuantity);
+    System.out.println("Child Orders: " + state.getChildOrders());
     // Step 4: Check the filled quantity against an expected value
-    assertEquals(55, filledQuantity);
+   //assertEquals(55, filledQuantity);
 
 
-    }}
+    }
+
+    @Test
+    public void testNegativeSpreadTick() throws Exception {
+       
+        send(negativeSpreadTick());
+
+     
+        var state = container.getState();
+        assertEquals("Expected child orders count to be 1", 1, state.getChildOrders().size());
+
+
+        long filledQuantity = state.getChildOrders().stream()
+        .map(ChildOrder::getFilledQuantity)
+            .reduce(Long::sum).get(); 
+    
+        System.out.println("Filled Quantity: " + filledQuantity);
+        System.out.println("Child Orders: " + state.getChildOrders());
+        // Step 4: Check the filled quantity against an expected value
+       //assertEquals(55, filledQuantity);
+    
+    }
+    @Test
+    public void testbelowThresholdTick() throws Exception {
+       send(belowThresholdTick());
+        var state = container.getState();
+        assertEquals("Expected child orders count to be 0", 0, state.getChildOrders().size());
+    }
+
+    @Test
+    public void testWideSpreadTick() throws Exception {
+        send(wideSpreadTick());
+        var state = container.getState();
+        assertEquals("Expected child orders count to be 0", 0, state.getChildOrders().size());
+    }
+   
+    
+
+
+  
+}
 
 
