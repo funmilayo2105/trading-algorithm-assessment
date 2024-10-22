@@ -21,8 +21,10 @@ public class MyAlgoLogic implements AlgoLogic {
     private double entryPrice; // The price at which i enter the trade (by/sell)
     private double boughtPrice;
     private long marketPrice;
+    private User user;
     public MyAlgoLogic(Integer maxOrder){
         maxChildOrder=maxOrder;
+        
 
     }
 
@@ -32,15 +34,17 @@ public class MyAlgoLogic implements AlgoLogic {
             logger.error("[MYALGO] Received null state.");
             return NoAction.NoAction;
         }
+
+       
     
         var orderBookAsString = Util.orderBookToString(state);
         logger.info("[MYALGO] The state of the order book is:\n" + orderBookAsString);
+
+        BidLevel nearTouch = state.getBidAt(0);
+        AskLevel farTouch = state.getAskAt(0); 
     
-        BidLevel nearTouch = state.getBidAt(0); // Highest buy price
-        AskLevel farTouch = state.getAskAt(0); // Lowest sell price
-    
-        if (nearTouch == null || farTouch == null|| nearTouch.price <= 0 || farTouch.price <= 0) {
-            logger.error("[MYALGO] Invalid or missing bid/ask data. ");
+        if (nearTouch == null || farTouch == null) {
+            logger.error("[MYALGO] Missing bid or ask level data.");
             return NoAction.NoAction;
         }
     
@@ -51,67 +55,59 @@ public class MyAlgoLogic implements AlgoLogic {
 
         SpreadStatus spreadStatus = Spread.getSpreadStatus(state, tradeSpread, spreadThreshold, wideSpreadThreshold);
         boolean childOrdersSizeLessThanMax = state.getChildOrders().size() < maxChildOrder;
-        double stopLossPrice = entryPrice - (0.04 * entryPrice); // 4% below entry price
+        
+       double stopLossPrice = entryPrice - (0.04 * entryPrice);
+       double takeProfitPrice = entryPrice + (0.04 * entryPrice); 
 
-        if (nearTouch.price <= stopLossPrice) {
-            return OrderAction.createOrder(Side.SELL, nearTouch.quantity, nearTouch.price);
+       
 
+ //WAIT WHEN UNFAVORABLE
+ if (spreadStatus == SpreadStatus.UNFAVOURABLE && childOrdersSizeLessThanMax) {
+    logger.info("[MYALGO] Spread is below Threshold. Waiting for favorable spread");
+    return NoAction.NoAction;
+
+         //CANCEL OLDEST CHILD ORDER WHEN WIDE 
+ }if (spreadStatus == SpreadStatus.WIDE) {
+            logger.warn("[MYALGO] Spread is too wide. Cancelling first active order");
+            return OrderAction.cancelActiveOrder(state);
         }
 
-
-        //WHEN SPREAD<0, SELL IF MARKET PRICE IS HIGHER THAN BOUGHT PRICE 
-        if (spreadStatus == SpreadStatus.NEGATIVE && childOrdersSizeLessThanMax){
+        //SELL WHEN SPREAD<0
+        /*if (!user.hasPermission("TRADE")) {
+            logger.warn("[MYALGO] User does not have permission to trade.");
+            return NoAction.NoAction;
+        } */
+ if (spreadStatus == SpreadStatus.NEGATIVE && childOrdersSizeLessThanMax){
             marketPrice = nearTouch.price;
             boughtPrice = entryPrice;
     
             if (marketPrice > boughtPrice) {
                 long bidQuantity = nearTouch.quantity;
                 long currentbidPrice = nearTouch.price;
-
-               
+    
                 this.entryPrice = currentbidPrice;
-                double takeProfitPrice = entryPrice + (0.02 * entryPrice); // 2% above entry price
-               
-                logger.info(String.format("[MYALGO] Placing Sell Order of Price: %s,  Take Profit: %s", 
-                        currentbidPrice, takeProfitPrice));
-
-                        if (currentbidPrice >= takeProfitPrice) {
+              
     
                 return OrderAction.createOrder(Side.SELL, bidQuantity, currentbidPrice);
-                        }
-                        else {
-                            return NoAction.NoAction;
-                        }
             } 
 
 
             //BUY WHEN FAVORABLE
-          if (spreadStatus == SpreadStatus.FAVOURABLE && childOrdersSizeLessThanMax) {
+            
+        }   if (spreadStatus == SpreadStatus.FAVOURABLE && childOrdersSizeLessThanMax) {
             long askQuantity = farTouch.quantity;
-            long askPrice = farTouch.price;
+            long currentaskPrice = farTouch.price;
 
-           // this.entryPrice= askPrice; //updating entry price on Buy
+            this.entryPrice = currentaskPrice;
     
-            logger.info("[MYALGO]Spread is favorable. Placing Buy Order at market price" );
-           // this.entryPrice=askPrice;
-    
-            return OrderAction.createOrder(Side.BUY, askQuantity, askPrice);
-
-        /*  } if (nearTouch.price <= stopLossPrice) {
-                logger.info("[MYALGO] Stop-loss triggered. Selling at price: " + nearTouch.price);
-                return OrderAction.createOrder(Side.SELL, nearTouch.quantity, nearTouch.price);
-            } */
-
-            //WAIT WHEN UNFAVORABLE
+            return OrderAction.createOrder(Side.BUY, askQuantity, currentaskPrice);
         } 
-    }if (spreadStatus == SpreadStatus.UNFAVOURABLE && childOrdersSizeLessThanMax) {
-            logger.info("[MYALGO] Spread is below Threshold. Waiting for favorable spread");
-            return NoAction.NoAction;
-    
-            //CANCEL OLDEST CHILD ORDER WHEN WIDE 
-        }   if (spreadStatus == SpreadStatus.WIDE) {
-            logger.warn("[MYALGO] Spread is too wide. Cancelling oldest active order.");
-            return OrderAction.cancelActiveOrder(state);
+        Action riskManagementAction = 
+        TradeRiskManager.checkStopLossOrTakeProfit
+        (nearTouch, stopLossPrice, takeProfitPrice, childOrdersSizeLessThanMax);
+
+        if (riskManagementAction != NoAction.NoAction) {
+            return riskManagementAction; 
         }
     
         return NoAction.NoAction;
