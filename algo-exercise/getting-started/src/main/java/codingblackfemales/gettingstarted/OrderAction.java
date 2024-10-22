@@ -13,7 +13,22 @@ import messages.order.Side;
 public class OrderAction { 
   
 
-    private static final Logger logger = LoggerFactory.getLogger(OrderAction.class); 
+    private static final Logger logger = LoggerFactory.getLogger(OrderAction.class);
+    
+  
+
+    //CLOSING POSITIONS
+    public static Action closeOrder(SimpleAlgoState state) {
+      if (state.getActiveChildOrders() != null && !state.getActiveChildOrders().isEmpty()) {
+          logger.info("[MYALGO] Closing the active order: " + state.getActiveChildOrders().get(0).getOrderId());
+         
+          return new CancelChildOrder(state.getActiveChildOrders().get(0)); 
+      } else {
+          logger.error("[MYALGO] No active orders to close.");
+          return NoAction.NoAction;
+      }}
+
+      
     
         public static boolean shouldCancelOrder(SimpleAlgoState state, double tradeSpread, double spreadThreshold, int maxChildOrder) 
         {
@@ -21,6 +36,7 @@ public class OrderAction {
         } 
        
        
+        //CREATING SELL OR BUY ORDERS
         public static Action createOrder(Side side, long quantity, long price) {
     
             if(side == Side.SELL)
@@ -29,7 +45,10 @@ public class OrderAction {
                 logger.info("[MYALGO] Spread is favorable, Placing a " + side + " order with quantity: " + quantity + " and price: " + price);       
             return new CreateChildOrder(side, quantity, price); 
           }
+
+
     
+        // CANCELLING ORDERS 
         public static Action cancelActiveOrder(SimpleAlgoState state) { 
     
           if (state.getActiveChildOrders() != null && !state.getActiveChildOrders().isEmpty()) { 
@@ -46,6 +65,9 @@ public class OrderAction {
              return NoAction.NoAction;  
          }  
     
+
+
+         
           return NoAction.NoAction; 
     
         } 
