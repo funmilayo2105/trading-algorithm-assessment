@@ -40,9 +40,9 @@ public class OrderAction {
         public static Action createOrder(Side side, long quantity, long price) {
     
             if(side == Side.SELL)
-                logger.info("[MYALGO] Spread is unfavorable, Placing a " + side + " order with quantity: " + quantity + " and price: " + price); 
+                logger.info("[MYALGO] Negative spread detected, Placing a " + side + " order with quantity: " + quantity + " and price: " + price); 
             else
-                logger.info("[MYALGO] Spread is favorable, Placing a " + side + " order with quantity: " + quantity + " and price: " + price);       
+                logger.info("[MYALGO] Favourable spread detected, Placing a " + side + " order with quantity: " + quantity + " and price: " + price);       
             return new CreateChildOrder(side, quantity, price); 
           }
 
@@ -53,7 +53,7 @@ public class OrderAction {
     
           if (state.getActiveChildOrders() != null && !state.getActiveChildOrders().isEmpty()) { 
     
-            logger.info("[MYALGO] Spread is tight, canceling an active child order..."); 
+            logger.info("[MYALGO] canceling an active child order..."); 
     
             return new CancelChildOrder(state.getActiveChildOrders().get(0)); 
         
