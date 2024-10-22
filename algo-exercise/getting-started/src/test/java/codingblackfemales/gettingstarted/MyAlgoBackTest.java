@@ -29,16 +29,19 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
     }
 
     @Test
-    public void testPositiveSpreadTick() throws Exception {
+    public void testFavourableSpreadTick() throws Exception {
         // Arrange: Set up a favorable market condition with positive spread
        
-        send(positiveSpreadTick());
+        send(FavourableSpreadTick());
 
         // Act: Get the state after the tick
         var state = container.getState();
 
         // Assert: Verify that a buy order was placed
-        assertEquals(container.getState().getChildOrders().size(),maximumOrders);
+       // assertEquals(container.getState().getChildOrders().size(),maximumOrders);
+       // var state = container.getState();
+        assertEquals("Expected child orders count to be 1", 1, state.getChildOrders().size());
+
 
         
          // Calculate filled quantity
@@ -49,7 +52,7 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
         System.out.println("Filled Quantity: " + filledQuantity);
     System.out.println("Child Orders: " + state.getChildOrders());
     // Step 4: Check the filled quantity against an expected value
-   //assertEquals(55, filledQuantity);
+   assertEquals(55, filledQuantity);
 
 
     }
