@@ -49,7 +49,7 @@ public abstract class AbstractAlgoTest extends SequencerTestCase {
     public abstract AlgoLogic createAlgoLogic();
 
 
-    protected UnsafeBuffer createTick(){
+    protected UnsafeBuffer positiveSpreadTick(){
 
         final MessageHeaderEncoder headerEncoder = new MessageHeaderEncoder();
         final BookUpdateEncoder encoder = new BookUpdateEncoder();
@@ -80,7 +80,7 @@ public abstract class AbstractAlgoTest extends SequencerTestCase {
 
         return directBuffer;
     }
-    protected UnsafeBuffer createWideningTick2() {
+    protected UnsafeBuffer negativeSpreadTick() {
 
         final MessageHeaderEncoder headerEncoder = new MessageHeaderEncoder();
         final BookUpdateEncoder encoder = new BookUpdateEncoder();

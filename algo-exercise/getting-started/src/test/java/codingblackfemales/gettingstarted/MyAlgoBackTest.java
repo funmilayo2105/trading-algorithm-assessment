@@ -46,8 +46,6 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
         assertEquals(container.getState().getChildOrders().size(),maximumOrders);
        // var state = container.getState();
         assertEquals("Expected child orders count to be 1", 1, state.getChildOrders().size());
-
-
         
          // Calculate filled quantity
     long filledQuantity = state.getChildOrders().stream()
@@ -64,13 +62,9 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
 
     @Test
     public void testNegativeSpreadTick() throws Exception {
-       
-        send(negativeSpreadTick());
-
-     
+     send(negativeSpreadTick());
         var state = container.getState();
         assertEquals("Expected child orders count to be 1", 1, state.getChildOrders().size());
-
 
         long filledQuantity = state.getChildOrders().stream()
         .map(ChildOrder::getFilledQuantity)
@@ -78,10 +72,10 @@ public class MyAlgoBackTest extends AbstractAlgoBackTest {
     
         System.out.println("Filled Quantity: " + filledQuantity);
         System.out.println("Child Orders: " + state.getChildOrders());
-        // Step 4: Check the filled quantity against an expected value
-       //assertEquals(55, filledQuantity);
+       
     
     }
+
     @Test
     public void testUnfavorableSpreadTick() throws Exception {
        send(unFavourableSpreadTick());

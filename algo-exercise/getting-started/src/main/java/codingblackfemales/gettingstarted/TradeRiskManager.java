@@ -1,13 +1,13 @@
 package codingblackfemales.gettingstarted;
 
     
-    import org.slf4j.Logger;
-    import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-    import codingblackfemales.action.Action;
+import codingblackfemales.action.Action;
 import codingblackfemales.action.NoAction;
 import codingblackfemales.sotw.marketdata.BidLevel;
-    import messages.order.Side;
+import messages.order.Side;
     
     public class TradeRiskManager {
         
@@ -21,7 +21,7 @@ import codingblackfemales.sotw.marketdata.BidLevel;
                 return OrderAction.createOrder(Side.SELL, nearTouch.quantity, nearTouch.price);
             }
     
-            // IF BEST BID BECOMES HIGHER THAN MY TAKEPROFIT PRICE, SELL.
+            // IF BEST BID BECOMES HIGHER THAN MY TAKEPROFIT PRICE, SELL TO LOCK GAINS.
             if (nearTouch.price >= takeProfitPrice && childOrdersSizeLessThanMax) {
                 logger.info("[TRADE RISK] Take profit triggered. Selling at price: " + nearTouch.price);
                 return OrderAction.createOrder(Side.SELL, nearTouch.quantity, nearTouch.price);
