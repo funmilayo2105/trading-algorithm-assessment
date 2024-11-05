@@ -88,7 +88,8 @@ public class MyAlgoLogic implements AlgoLogic {
         nearTouch, 
         stopLossPrice,
         takeProfitPrice,
-        childOrdersSizeLessThanMax);
+        childOrdersSizeLessThanMax,
+        takeProfitPrice);
     
     if (riskManagementAction != NoAction.NoAction) {
         return riskManagementAction; 
