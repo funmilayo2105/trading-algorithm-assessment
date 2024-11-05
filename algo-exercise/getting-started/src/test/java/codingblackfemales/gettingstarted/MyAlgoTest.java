@@ -33,7 +33,6 @@ public class MyAlgoTest extends AbstractAlgoTest {
     private BidLevel mockNearTouch;
     private AskLevel mockFarTouch;
 
-    private MyAlgoLogic algoLogic;
     @Override
     public AlgoLogic createAlgoLogic() {
         // This adds your algo logic to the container classes
