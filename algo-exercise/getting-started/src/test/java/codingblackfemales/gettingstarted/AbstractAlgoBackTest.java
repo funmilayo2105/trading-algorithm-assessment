@@ -1,5 +1,9 @@
 package codingblackfemales.gettingstarted;
 
+import java.nio.ByteBuffer;
+
+import org.agrona.concurrent.UnsafeBuffer;
+
 import codingblackfemales.algo.AlgoLogic;
 import codingblackfemales.container.Actioner;
 import codingblackfemales.container.AlgoContainer;
@@ -15,10 +19,11 @@ import codingblackfemales.sequencer.marketdata.SequencerTestCase;
 import codingblackfemales.sequencer.net.TestNetwork;
 import codingblackfemales.service.MarketDataService;
 import codingblackfemales.service.OrderService;
-import messages.marketdata.*;
-import org.agrona.concurrent.UnsafeBuffer;
-
-import java.nio.ByteBuffer;
+import messages.marketdata.BookUpdateEncoder;
+import messages.marketdata.InstrumentStatus;
+import messages.marketdata.MessageHeaderEncoder;
+import messages.marketdata.Source;
+import messages.marketdata.Venue;
 
 public abstract class AbstractAlgoBackTest extends SequencerTestCase {
 
@@ -55,7 +60,7 @@ public abstract class AbstractAlgoBackTest extends SequencerTestCase {
 
     public abstract AlgoLogic createAlgoLogic();
 
-    protected UnsafeBuffer createTick(){
+    protected UnsafeBuffer FavourableSpreadTick(){
         final MessageHeaderEncoder headerEncoder = new MessageHeaderEncoder();
         final BookUpdateEncoder encoder = new BookUpdateEncoder();
 
@@ -71,12 +76,12 @@ public abstract class AbstractAlgoBackTest extends SequencerTestCase {
         encoder.instrumentId(123L);
         encoder.source(Source.STREAM);
 
-        encoder.bidBookCount(3)
+        encoder.askBookCount(3)
                 .next().price(98L).size(100L)
                 .next().price(95L).size(200L)
                 .next().price(91L).size(300L);
 
-        encoder.askBookCount(4)
+        encoder.bidBookCount(4)
                 .next().price(100L).size(101L)
                 .next().price(110L).size(200L)
                 .next().price(115L).size(5000L)
@@ -87,7 +92,7 @@ public abstract class AbstractAlgoBackTest extends SequencerTestCase {
         return directBuffer;
     }
 
-    protected UnsafeBuffer createTick2(){
+    protected UnsafeBuffer unFavourableSpreadTick(){
 
         final MessageHeaderEncoder headerEncoder = new MessageHeaderEncoder();
         final BookUpdateEncoder encoder = new BookUpdateEncoder();
@@ -103,14 +108,16 @@ public abstract class AbstractAlgoBackTest extends SequencerTestCase {
         encoder.instrumentId(123L);
         encoder.source(Source.STREAM);
 
-        encoder.bidBookCount(3)
-                .next().price(95L).size(100L)
-                .next().price(93L).size(200L)
-                .next().price(91L).size(300L);
+        encoder.askBookCount(3)
 
-        encoder.askBookCount(4)
-                .next().price(98L).size(501L)
-                .next().price(101L).size(200L)
+        
+                .next().price(102L).size(200L)
+                .next().price(93L).size(300L)
+                .next().price(91L).size(400L);
+
+        encoder.bidBookCount(4)
+                .next().price(102L).size(301L)
+                .next().price(103L).size(200L)
                 .next().price(110L).size(5000L)
                 .next().price(119L).size(5600L);
 
@@ -118,6 +125,80 @@ public abstract class AbstractAlgoBackTest extends SequencerTestCase {
 
         return directBuffer;
     }
+
+    protected UnsafeBuffer negativeSpreadTick() {
+        final MessageHeaderEncoder headerEncoder = new MessageHeaderEncoder();
+        final BookUpdateEncoder encoder = new BookUpdateEncoder();
+    
+        final ByteBuffer byteBuffer = ByteBuffer.allocateDirect(1024);
+        final UnsafeBuffer directBuffer = new UnsafeBuffer(byteBuffer);
+    
+        // Write the encoded output to the direct buffer
+        encoder.wrapAndApplyHeader(directBuffer, 0, headerEncoder);
+    
+        // Set the fields to desired values for the negative spread tick
+        encoder.venue(Venue.XLON);
+        encoder.instrumentId(123L);
+        encoder.source(Source.STREAM);
+    
+        encoder.askBookCount(3)
+                .next().price(109L).size(100L)
+                .next().price(105L).size(200L)
+                .next().price(100L).size(300L);
+
+        encoder.bidBookCount(4)
+                .next().price(100L).size(101L)
+                .next().price(110L).size(200L)
+                .next().price(115L).size(5000L)
+                .next().price(119L).size(5600L);
+
+      
+
+
+        
+    
+        encoder.instrumentStatus(InstrumentStatus.CONTINUOUS);
+    
+        return directBuffer;
+    }
+
+
+    protected UnsafeBuffer wideSpreadTick() {
+        final MessageHeaderEncoder headerEncoder = new MessageHeaderEncoder();
+        final BookUpdateEncoder encoder = new BookUpdateEncoder();
+    
+        final ByteBuffer byteBuffer = ByteBuffer.allocateDirect(1024);
+        final UnsafeBuffer directBuffer = new UnsafeBuffer(byteBuffer);
+    
+       
+        encoder.wrapAndApplyHeader(directBuffer, 0, headerEncoder);
+    
+        
+        encoder.venue(Venue.XLON);
+        encoder.instrumentId(123L);
+        encoder.source(Source.STREAM);
+    
+        encoder.askBookCount(3)
+                .next().price(90L).size(100L)
+                .next().price(93L).size(200L)
+                .next().price(91L).size(300L);
+
+        encoder.bidBookCount(4)
+                .next().price(100L).size(101L)
+                .next().price(110L).size(200L)
+                .next().price(115L).size(5000L)
+                .next().price(119L).size(5600L);
+
+      
+
+
+        
+    
+        encoder.instrumentStatus(InstrumentStatus.CONTINUOUS);
+    
+        return directBuffer;
+    }
+    
 
 
 }

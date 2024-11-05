@@ -1,0 +1,37 @@
+/* MarketDepthFeature.css */
+
+/* Container for market depth feature */
+.market-depth-feature {
+    margin: 20px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Table styling */
+  .market-depth-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  
+  /* Table headers */
+  .market-depth-table th {
+    padding: 10px;
+    text-align: left;
+    background-color: #f4f4f4;
+    border: 1px solid #ddd;
+    font-weight: bold;
+  }
+  
+  /* Table rows and columns */
+  .market-depth-table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+  }
+  
+  .market-depth-table tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+  

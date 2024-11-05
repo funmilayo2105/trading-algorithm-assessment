@@ -1,6 +1,7 @@
 import { Placeholder } from "../placeholder";
-//import { useMarketDepthData } from "./useMarketDepthData";
-//import { schemas } from "../../data/algo-schemas";
+import { MarketDepthRow, useMarketDepthData } from "./useMarketDepthData";
+import { schemas } from "../../data/algo-schemas";
+import "./MarketDepthFeature.css";
 
 // prettier-ignore
 // const testData: MarketDepthRow[] = [
@@ -20,6 +21,38 @@ import { Placeholder } from "../placeholder";
  * TODO
  */
 export const MarketDepthFeature = () => {
-  // const data = useMarketDepthData(schemas.prices);
-  return <Placeholder />;
+  //fetching market depth data
+   const data = useMarketDepthData(schemas.prices);
+  
+   if (!data) {
+    return <Placeholder />};
+
+ // Render the table of market depth data
+ return (
+  <div className="market-depth-feature">
+    <h2>Market Depth</h2>
+    <table className="market-depth-table">
+      <thead>
+        <tr>
+          <th>Level</th>
+          <th>Bid</th>
+          <th>Bid Quantity</th>
+          <th>Offer</th>
+          <th>Offer Quantity</th>
+        </tr>
+      </thead>
+      <tbody>
+        {data.map((row: MarketDepthRow) => (
+          <tr key={row.symbolLevel}>
+            <td>{row.level}</td>
+            <td>{row.bid}</td>
+            <td>{row.bidQuantity}</td>
+            <td>{row.offer}</td>
+            <td>{row.offerQuantity}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+);
 };
